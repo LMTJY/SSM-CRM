@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.CustomerDao">
+    <select id="queryAll" resultMap="customerMap">
+          SELECT uid,uname,h.`cid`
+		hangyeid,h.`cname`
+		htype,j.`cid`
+		jibieid,j.`cname` jtype,shouji FROM
+		t_customer c,t_type h,t_type j WHERE
+		c.`hangye`=h.`cid` AND
+		c.`jibie`=j.`cid`
+    </select>
+    <resultMap type="Customer" id="customerMap">
+        <id property="uid" column="uid"/>
+        <result property="uname" column="uname"/>
+        <result property="shouji" column="shouji"/>
+        <association property="hangye" javaType="Type">
+            <id property="cid" column="hangyeid"/>
+            <result property="cname" column="htype"/>
+        </association>
+        <association property="jibie" javaType="Type">
+            <id property="cid" column="jibieid"/>
+            <result property="cname" column="jtype"/>
+        </association>
+    </resultMap>
+
+    <!--判断是否为空-->
+    <sql id="queryCustom">
+        <if test="name!=null and name!=''">
+            and c.uname like '%${name}%'
+        </if>
+        <if test="jibie!=0">
+            and c.jibie=#{jibie}
+        </if>
+        <if test="hangye!=0">
+            and c.hangye=#{hangye}
+        </if>
+    </sql>
+    <select id="count" parameterType="com.pojo.QueryCustomer" resultType="int">
+        SELECT COUNT(*) FROM
+        t_customer c,t_type h,t_type j WHERE
+        c.`hangye`=h.`cid` AND
+        c.`jibie`=j.`cid`
+        <include refid="queryCustom"></include>
+    </select>
+    <select id="query" parameterType="QueryCustomer"
+            resultMap="customerMap">
+        SELECT uid,uname,h.`cid` hangyeid,h.`cname`
+        htype,j.`cid`
+        jibieid,j.`cname` jtype,shouji FROM t_customer
+        c,t_type h,t_type j
+        WHERE
+        c.`hangye`=h.`cid` AND c.`jibie`=j.`cid`
+        <include refid="queryCustom"></include>
+        <if test="pianyi!=-1">
+            limit #{pianyi},#{rows}
+        </if>
+    </select>
+    <select id="queryById" parameterType="int" resultMap="customerMap">
+           SELECT uid,uname,h.`cid`
+		hangyeid,h.`cname`
+		htype,j.`cid`
+		jibieid,j.`cname` jtype,shouji FROM
+		t_customer c,t_type h,t_type j WHERE
+		c.`hangye`=h.`cid` AND
+		c.`jibie`=j.`cid`and uid=#{uid}
+    </select>
+    <update id="update" parameterType="com.pojo.Customer">
+        update t_customer set uname=#{uname},hangye=#{hangye.cid},jibie=#{jibie.cid},shouji=#{shouji}where uid=#{uid}
+    </update>
+    <delete id="delete" parameterType="int">
+        delete from t_customer where uid=#{uid}
+    </delete>
+</mapper>
